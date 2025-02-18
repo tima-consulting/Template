@@ -1,0 +1,178 @@
+Si tu veux intégrer cette solution dans une application Spring Boot et récupérer les informations sensibles (clé privée, mot de passe et passphrase) depuis Vault, voici comment procéder.
+
+
+---
+
+📌 Étapes :
+
+1. Configurer Vault pour stocker les secrets
+
+
+2. Utiliser Spring Cloud Vault pour récupérer ces secrets
+
+
+3. Adapter le code SFTP pour utiliser les valeurs de Vault
+
+
+
+
+---
+
+✅ 1. Configurer Vault (Exemple en CLI)
+
+Stocke les informations SFTP dans Vault :
+
+vault kv put secret/sftp privateKey=@/chemin/vers/id_rsa passphrase="maPassPhrase" username="user" host="sftp.example.com"
+
+Explication :
+
+privateKey=@/chemin/vers/id_rsa → Charge la clé privée depuis un fichier
+
+passphrase="maPassPhrase" → Stocke la passphrase
+
+username="user" → Nom d'utilisateur
+
+host="sftp.example.com" → Adresse du serveur
+
+
+
+---
+
+✅ 2. Configurer Spring Boot pour se connecter à Vault
+
+Ajoute Spring Cloud Vault dans pom.xml :
+
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-vault-config</artifactId>
+</dependency>
+
+Puis, configure application.properties :
+
+spring.cloud.vault.uri=http://localhost:8200  # URL de Vault
+spring.cloud.vault.token=00000000-0000-0000-0000-000000000000  # Ton token Vault
+spring.cloud.vault.kv.enabled=true
+spring.cloud.vault.kv.application-name=sftp
+
+
+---
+
+✅ 3. Créer une classe de configuration pour SFTP
+
+Dans Spring Boot, utilise @Value pour injecter les secrets depuis Vault.
+
+import com.jcraft.jsch.*;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.Properties;
+
+@Service
+public class SFTPService {
+
+    @Value("${sftp.host}")
+    private String host;
+
+    @Value("${sftp.username}")
+    private String username;
+
+    @Value("${sftp.privateKey}")
+    private String privateKey;
+
+    @Value("${sftp.passphrase}")
+    private String passphrase;
+
+    @Value("${sftp.remoteDir}")
+    private String remoteDir;
+
+    public void uploadFile(String localFile) {
+        Session session = null;
+        ChannelSftp channelSftp = null;
+
+        try {
+            // Initialisation de JSch
+            JSch jsch = new JSch();
+            jsch.addIdentity(privateKey, passphrase); // Utilisation de la clé privée avec passphrase
+
+            // Connexion SSH
+            session = jsch.getSession(username, host, 22);
+
+            // Désactiver la vérification stricte de l'hôte
+            Properties config = new Properties();
+            config.put("StrictHostKeyChecking", "no");
+            session.setConfig(config);
+
+            // Connexion au serveur
+            session.connect();
+            System.out.println("Connexion réussie à " + host);
+
+            // Ouverture du canal SFTP
+            channelSftp = (ChannelSftp) session.openChannel("sftp");
+            channelSftp.connect();
+            System.out.println("Canal SFTP ouvert");
+
+            // Envoi du fichier
+            File file = new File(localFile);
+            channelSftp.put(new FileInputStream(file), remoteDir + file.getName());
+            System.out.println("Fichier envoyé avec succès: " + file.getName());
+
+        } catch (JSchException | SftpException | java.io.FileNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            // Fermeture des connexions
+            if (channelSftp != null) channelSftp.disconnect();
+            if (session != null) session.disconnect();
+            System.out.println("Connexion fermée");
+        }
+    }
+}
+
+
+---
+
+✅ 4. Utiliser le Service dans un Controller
+
+Ajoute un REST Controller pour déclencher l'upload :
+
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/sftp")
+public class SFTPController {
+
+    private final SFTPService sftpService;
+
+    public SFTPController(SFTPService sftpService) {
+        this.sftpService = sftpService;
+    }
+
+    @PostMapping("/upload")
+    public String uploadFile(@RequestParam String filePath) {
+        sftpService.uploadFile(filePath);
+        return "Fichier envoyé avec succès";
+    }
+}
+
+
+---
+
+📌 Test
+
+Lance l’application et fais un test via Postman :
+
+POST http://localhost:8080/sftp/upload?filePath=/chemin/local/fichier.txt
+
+
+---
+
+✅ Résumé :
+
+✔ Vault stocke les secrets (clé privée, passphrase, etc.)
+✔ Spring Boot récupère ces valeurs automatiquement
+✔ JSch utilise ces secrets pour se connecter en SFTP avec clé privée
+✔ Un service Spring Boot expose un endpoint API pour envoyer un fichier
+
+Ça devrait marcher parfaitement. Essaye et dis-moi si besoin d’ajustements 🚀
+
