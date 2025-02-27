@@ -1,0 +1,6 @@
+You can say something like:
+
+"The current state of the application is unstable, and a key indicator confirms this: our Cypress tests have been failing for the past four months. This means we're moving forward without a safety net, risking regressions with every deployment. It's critical to stabilize these tests to ensure the reliability of our application and prevent issues in production. We need to prioritize fixing the tests and making sure they accurately reflect business expectations. What do you think?"
+
+This highlights the issue without blaming anyone and encourages a discussion to find a solution together.
+
