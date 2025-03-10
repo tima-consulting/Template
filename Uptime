@@ -1,0 +1,134 @@
+Voici un plan détaillé pour tes slides sur Uptime & Heartbeat.
+
+
+---
+
+Slide 1 – Title Slide
+
+Title: Uptime & Heartbeat – API Monitoring
+Subtitle: Ensuring Reliability with Elastic Stack
+
+
+---
+
+Slide 2 – Introduction
+
+What is Uptime Monitoring?
+
+Ensuring services are available and responsive
+
+Detecting failures before they impact users
+
+
+Why is it important?
+
+Improves system reliability
+
+Reduces downtime and speeds up troubleshooting
+
+
+
+
+---
+
+Slide 3 – What is Heartbeat?
+
+Definition: Lightweight agent for monitoring uptime
+
+How it works:
+
+Sends requests (ICMP, TCP, HTTP) to services
+
+Reports availability and latency to Elasticsearch
+
+Integrates with Kibana for visualization
+
+
+
+
+---
+
+Slide 4 – Uptime vs. Traditional Monitoring
+
+
+---
+
+Slide 5 – Heartbeat Configuration
+
+Define Monitors:
+
+HTTP Monitor (for APIs)
+
+TCP Monitor (for databases, services)
+
+ICMP Monitor (for network checks)
+
+
+Example Configuration (heartbeat.yml):
+
+heartbeat.monitors:
+  - type: http
+    name: My API Healthcheck
+    schedule: '@every 10s'
+    urls: ["https://myapi.com/health"]
+
+
+
+---
+
+Slide 6 – Visualizing Data in Kibana
+
+Uptime Dashboard:
+
+Shows service status & response times
+
+Provides historical uptime trends
+
+
+Alerting:
+
+Configurable thresholds for downtime alerts
+
+
+
+
+---
+
+Slide 7 – Demo: Monitoring an API
+
+Step 1: Install and configure Heartbeat
+
+Step 2: Define API health checks
+
+Step 3: View results in Kibana
+
+
+
+---
+
+Slide 8 – Best Practices
+
+Set up multiple monitoring locations
+
+Use different check intervals for critical vs. non-critical services
+
+Integrate alerts with Slack, email, or PagerDuty
+
+Regularly review and refine healthchecks
+
+
+
+---
+
+Slide 9 – Q&A
+
+Any questions?
+
+Discussion on real-world use cases
+
+
+
+---
+
+Si tu veux des ajouts ou des modifications, dis-moi !
+
