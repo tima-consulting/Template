@@ -1,0 +1,201 @@
+🚀 Exemple Complet avec Résilience4j et Spring Boot
+
+On va configurer Circuit Breaker, Retry et Rate Limiter dans une application Spring Boot.
+
+
+---
+
+1️⃣ Ajout des dépendances
+
+Ajoute ces dépendances dans ton pom.xml :
+
+<dependencies>
+    <!-- Spring Boot Web -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <!-- Resilience4j -->
+    <dependency>
+        <groupId>io.github.resilience4j</groupId>
+        <artifactId>resilience4j-spring-boot3</artifactId>
+        <version>2.2.0</version>
+    </dependency>
+
+    <!-- Actuator pour observer le circuit breaker -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+</dependencies>
+
+
+---
+
+2️⃣ Création d'un Service avec Circuit Breaker et Retry
+
+On va créer un service qui appelle une API externe avec RestTemplate ou WebClient.
+
+📌 Service avec Circuit Breaker et Retry
+
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+@Service
+public class ExternalApiService {
+    private final RestTemplate restTemplate = new RestTemplate();
+    private static final String SERVICE_NAME = "externalApi";
+
+    @CircuitBreaker(name = SERVICE_NAME, fallbackMethod = "fallbackResponse")
+    @Retry(name = SERVICE_NAME)
+    public String callExternalService() {
+        System.out.println("🔄 Tentative d'appel à l'API externe...");
+        return restTemplate.getForObject("http://fake-api.com/data", String.class);
+    }
+
+    // Méthode fallback si l'API échoue
+    public String fallbackResponse(Exception e) {
+        return "⚠️ Service indisponible. Veuillez réessayer plus tard.";
+    }
+}
+
+✅ Si l'API externe échoue, Resilience4j va :
+
+1. Réessayer l’appel (Retry)
+
+
+2. Couper le circuit après plusieurs échecs (Circuit Breaker)
+
+
+3. Retourner la réponse de secours fallbackResponse
+
+
+
+
+---
+
+3️⃣ Ajout d’un Contrôleur
+
+On expose l’appel au service via une API REST :
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api")
+public class ExternalApiController {
+    private final ExternalApiService externalApiService;
+
+    public ExternalApiController(ExternalApiService externalApiService) {
+        this.externalApiService = externalApiService;
+    }
+
+    @GetMapping("/call")
+    public String callExternalApi() {
+        return externalApiService.callExternalService();
+    }
+}
+
+✅ Appelle cette API avec :
+
+curl http://localhost:8080/api/call
+
+
+---
+
+4️⃣ Configuration de Resilience4j dans application.yml
+
+Ajoute cette configuration pour définir :
+
+Le nombre de tentatives pour Retry
+
+Le nombre d’échecs avant d’ouvrir le circuit (CircuitBreaker)
+
+La limitation du nombre d’appels (RateLimiter)
+
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      externalApi:
+        failureRateThreshold: 50 # Ouvre le circuit si 50% des appels échouent
+        waitDurationInOpenState: 5000ms # Attente avant de retester
+        permittedNumberOfCallsInHalfOpenState: 2 # Nombre d'essais en semi-ouvert
+        slidingWindowSize: 10 # Nombre de requêtes prises en compte pour le calcul du taux d'erreur
+
+  retry:
+    instances:
+      externalApi:
+        maxAttempts: 3 # Nombre max de tentatives avant échec
+        waitDuration: 2000ms # Attente entre chaque tentative
+
+  ratelimiter:
+    instances:
+      externalApi:
+        limitForPeriod: 2 # Max 2 appels par période
+        limitRefreshPeriod: 10s # Période de rafraîchissement
+        timeoutDuration: 0 # Pas d’attente si limite atteinte
+
+
+---
+
+5️⃣ Test du Circuit Breaker et Retry
+
+🔹 Étape 1 : Appeler l’API avec succès
+Si http://fake-api.com/data répond, tu verras "Réponse de l'API".
+
+🔹 Étape 2 : Simuler un échec
+Si l'API échoue (500 ou Timeout), Resilience4j va :
+✅ Réessayer 3 fois (grâce à Retry)
+✅ Ouvrir le circuit si 50% des appels échouent
+✅ Appeler la méthode fallbackResponse
+
+
+---
+
+6️⃣ Observer l’état du Circuit Breaker
+
+Ajoute Spring Actuator dans application.yml :
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+
+Puis, consulte l'état du Circuit Breaker :
+
+curl http://localhost:8080/actuator/health
+
+✅ Si tout fonctionne, l’état sera :
+
+{"status":"UP"}
+
+✅ Si le circuit est ouvert, tu verras :
+
+{
+  "status": "DOWN",
+  "components": {
+    "circuitBreakers": {
+      "externalApi": {
+        "state": "OPEN"
+      }
+    }
+  }
+}
+
+
+---
+
+📌 Conclusion
+
+Avec ce setup, ton application est plus résistante aux pannes : ✅ Retry : Réessaye automatiquement en cas d’échec
+✅ Circuit Breaker : Coupe le service après trop d’échecs
+✅ Rate Limiter : Empêche une surcharge des appels
+
+💡 Tu veux ajouter d'autres modules comme Bulkhead ou TimeLimiter ?
+
