@@ -1,0 +1,32 @@
+Resilience4j is a lightweight library designed to help implement resilient systems by managing fault tolerance in remote communications. It provides several modules to implement resilience patterns such as:
+
+Circuit Breaker: Prevents repeated calls to a failing service by opening a circuit.
+
+Retry: Automatically retries an operation in case of temporary failures.
+
+Rate Limiter: Limits the number of calls to a service to prevent overloading.
+
+Bulkhead: Isolates resources to ensure that a slow service does not affect the entire system.
+
+TimeLimiter: Sets a time limit for task execution.
+
+
+Decision
+
+We have decided to use Resilience4j to enhance the robustness of our application by integrating:
+
+A circuit breaker to prevent excessive calls to failing services.
+
+A retry mechanism to handle temporary API failures.
+
+A time limiter to avoid excessive waiting times.
+
+
+Consequence
+
+Improved fault tolerance for external APIs.
+
+Reduced risk of system overload in case of service failures.
+
+Enhanced overall application availability.
+
