@@ -1,0 +1,77 @@
+Si le name est toujours le même pour un bdrId, alors il suffit de prendre le premier name rencontré lors de la fusion. Voici une version améliorée du code qui garde le name et fusionne correctement les autorisations :
+
+Code optimisé :
+
+import java.util.*;
+import java.util.stream.Collectors;
+import lombok.*;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@SuperBuilder
+class Borrower {
+    private String name;
+    private String bdrId;
+    private List<BorrowerCountryKycStatus> kycStatuses;
+    private Set<AuthorisationToDealStatus> authorisationToDealStatuses;
+}
+
+public class BorrowerMerger {
+    public static void main(String[] args) {
+        List<Borrower> borrowers = Arrays.asList(
+            new Borrower("Alice", "BDR1", new ArrayList<>(), Set.of(new AuthorisationToDealStatus("Auth1"))),
+            new Borrower("Alice", "BDR1", new ArrayList<>(), Set.of(new AuthorisationToDealStatus("Auth2"))),
+            new Borrower("Charlie", "BDR2", new ArrayList<>(), Set.of(new AuthorisationToDealStatus("Auth3")))
+        );
+
+        // Regroupement et fusion
+        List<Borrower> mergedBorrowers = borrowers.stream()
+            .collect(Collectors.toMap(
+                Borrower::getBdrId, 
+                b -> new Borrower(
+                    b.getName(), 
+                    b.getBdrId(), 
+                    new ArrayList<>(b.getKycStatuses()), 
+                    new HashSet<>(b.getAuthorisationToDealStatuses())
+                ),
+                (b1, b2) -> { 
+                    b1.getAuthorisationToDealStatuses().addAll(b2.getAuthorisationToDealStatuses());
+                    return b1;
+                }
+            ))
+            .values()
+            .stream()
+            .collect(Collectors.toList());
+
+        mergedBorrowers.forEach(System.out::println);
+    }
+}
+
+// Classe d'exemple pour AuthorisationToDealStatus
+class AuthorisationToDealStatus {
+    private String status;
+    public AuthorisationToDealStatus(String status) { this.status = status; }
+    @Override
+    public String toString() { return status; }
+}
+
+Améliorations :
+
+1. Préserve le name : On prend le premier name trouvé par bdrId.
+
+
+2. Crée une nouvelle instance : Évite de modifier directement les objets de la liste initiale.
+
+
+3. Fusionne bien les authorisationToDealStatuses : En utilisant HashSet, on évite les doublons.
+
+
+
+Résultat attendu :
+
+Borrower(name=Alice, bdrId=BDR1, kycStatuses=[], authorisationToDealStatuses=[Auth1, Auth2])
+Borrower(name=Charlie, bdrId=BDR2, kycStatuses=[], authorisationToDealStatuses=[Auth3])
+
+Dis-moi si cette version te convient !
+
