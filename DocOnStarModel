@@ -1,0 +1,186 @@
+Documentation Complète du Modèle en Étoile (Star Model) avec Exemple en Trade Finance
+
+1. Introduction
+
+Le modèle en étoile ("Star Schema") est une architecture de base de données dimensionnelle utilisée principalement dans les entrepôts de données (data warehouses). Il est conçu pour faciliter la lecture et l'analyse de grandes quantités de données. Ce modèle est simple, performant et idéal pour les analyses OLAP (Online Analytical Processing).
+
+Dans le contexte du Trade Finance, le modèle en étoile permet de modéliser les différentes transactions financières entre les banques et les entreprises exportatrices/importatrices.
+
+2. Composition du Modèle en Étoile
+
+Le modèle en étoile est composé de deux types principaux de tables :
+
+Table de faits : contient les mesures quantitatives de l'activité (par exemple, montant financé, taux d'intérêt, frais bancaires, etc.).
+
+Tables de dimensions : contiennent les informations descriptives liées à la table de faits (par exemple, client, produit, date, pays, etc.).
+
+
+3. Exemple en Trade Finance
+
+3.1 Tables de dimensions
+
+Table Client
+
+ID_Client (PK)
+
+Nom_Client
+
+Secteur_Activite
+
+Pays_Client
+
+
+Table Produit
+
+ID_Produit (PK)
+
+Type_Financement
+
+Montant_Maximum
+
+
+Table Date
+
+ID_Date (PK)
+
+Jour
+
+Mois
+
+Annee
+
+Trimestre
+
+
+Table Pays
+
+ID_Pays (PK)
+
+Nom_Pays
+
+Code_ISO
+
+
+3.2 Table de faits
+
+Table Transactions
+
+ID_Transaction (PK)
+
+Montant_Finance
+
+Frais_Bancaires
+
+Duree (en mois)
+
+Taux_Interet
+
+ID_Client (FK)
+
+ID_Produit (FK)
+
+ID_Date (FK)
+
+ID_Pays (FK)
+
+
+4. Script SQL de création
+
+CREATE TABLE Client (
+    ID_Client INT PRIMARY KEY,
+    Nom_Client VARCHAR(255),
+    Secteur_Activite VARCHAR(255),
+    Pays_Client VARCHAR(255)
+);
+
+CREATE TABLE Produit (
+    ID_Produit INT PRIMARY KEY,
+    Type_Financement VARCHAR(255),
+    Montant_Maximum DECIMAL(15, 2)
+);
+
+CREATE TABLE Date (
+    ID_Date INT PRIMARY KEY,
+    Jour INT,
+    Mois INT,
+    Annee INT,
+    Trimestre INT
+);
+
+CREATE TABLE Pays (
+    ID_Pays INT PRIMARY KEY,
+    Nom_Pays VARCHAR(255),
+    Code_ISO VARCHAR(3)
+);
+
+CREATE TABLE Transactions (
+    ID_Transaction INT PRIMARY KEY,
+    Montant_Finance DECIMAL(15, 2),
+    Frais_Bancaires DECIMAL(15, 2),
+    Duree INT,
+    Taux_Interet DECIMAL(5, 2),
+    ID_Client INT,
+    ID_Produit INT,
+    ID_Date INT,
+    ID_Pays INT,
+    FOREIGN KEY (ID_Client) REFERENCES Client(ID_Client),
+    FOREIGN KEY (ID_Produit) REFERENCES Produit(ID_Produit),
+    FOREIGN KEY (ID_Date) REFERENCES Date(ID_Date),
+    FOREIGN KEY (ID_Pays) REFERENCES Pays(ID_Pays)
+);
+
+5. Données d'exemple
+
+INSERT INTO Client VALUES
+(101, 'ABC Corp', 'Agroalimentaire', 'France'),
+(102, 'XYZ Ltd', 'Automobile', 'Allemagne'),
+(103, 'Global Traders', 'Technologie', 'USA');
+
+INSERT INTO Produit VALUES
+(201, 'Lettre de Crédit', 1000000.00),
+(202, 'Garantie Bancaire', 500000.00);
+
+INSERT INTO Date VALUES
+(20230101, 1, 1, 2023, 1),
+(20230201, 1, 2, 2023, 1);
+
+INSERT INTO Pays VALUES
+(10, 'France', 'FR'),
+(20, 'Allemagne', 'DE'),
+(30, 'USA', 'US');
+
+INSERT INTO Transactions VALUES
+(1, 500000.00, 5000.00, 12, 4.00, 101, 201, 20230101, 10),
+(2, 250000.00, 2500.00, 6, 3.50, 102, 202, 20230101, 20),
+(3, 1000000.00, 10000.00, 24, 5.00, 103, 201, 20230201, 30);
+
+6. Requêtes d'analyse
+
+Total financé par pays
+
+SELECT
+    p.Nom_Pays,
+    SUM(t.Montant_Finance) AS Montant_Total_Finance
+FROM
+    Transactions t
+JOIN
+    Pays p ON t.ID_Pays = p.ID_Pays
+GROUP BY
+    p.Nom_Pays;
+
+Montant moyen financé par type de produit
+
+SELECT
+    pr.Type_Financement,
+    AVG(t.Montant_Finance) AS Montant_Moyen
+FROM
+    Transactions t
+JOIN
+    Produit pr ON t.ID_Produit = pr.ID_Produit
+GROUP BY
+    pr.Type_Financement;
+
+7. Conclusion
+
+Le modèle en étoile est très adapté pour la gestion et l'analyse des données de financement dans le secteur du Trade Finance. Il offre une structure claire, facilite la navigation entre les dimensions et améliore les performances des requêtes analytiques. Ce modèle peut être enrichi en ajoutant d'autres dimensions comme la devise, les canaux de distribution, ou les régions géographiques pour des analyses plus fines.
+
