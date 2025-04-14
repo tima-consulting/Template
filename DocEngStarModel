@@ -1,0 +1,211 @@
+Comprehensive Documentation of the Star Schema Model with a Trade Finance Example
+
+1. Introduction
+
+The Star Schema is a widely used data modeling technique in data warehousing and business intelligence. It is designed to optimize analytical query performance and provide a clear, intuitive structure for business users. This model is characterized by a central fact table surrounded by dimension tables, resembling a star — hence the name.
+
+In the context of Trade Finance, where financial institutions provide credit facilities to support international trade, a Star Schema can help track and analyze financial transactions such as letters of credit, guarantees, and export loans across different dimensions like clients, products, countries, and time.
+
+2. Components of the Star Schema
+
+The star schema consists of:
+
+Fact Table: Contains measurable, quantitative data (e.g., financed amount, interest rate, fees).
+
+Dimension Tables: Contain descriptive attributes related to the fact data (e.g., client name, product type, country, date).
+
+
+3. Trade Finance Star Schema Example
+
+3.1 Dimension Tables
+
+Client Table
+
+ID_Client (Primary Key)
+
+Client_Name
+
+Industry_Sector
+
+Client_Country
+
+
+Product Table
+
+ID_Product (Primary Key)
+
+Financing_Type
+
+Maximum_Amount
+
+
+Date Table
+
+ID_Date (Primary Key)
+
+Day
+
+Month
+
+Year
+
+Quarter
+
+
+Country Table
+
+ID_Country (Primary Key)
+
+Country_Name
+
+ISO_Code
+
+
+3.2 Fact Table
+
+Transactions Table
+
+ID_Transaction (Primary Key)
+
+Financed_Amount
+
+Banking_Fees
+
+Duration_Months
+
+Interest_Rate
+
+ID_Client (Foreign Key)
+
+ID_Product (Foreign Key)
+
+ID_Date (Foreign Key)
+
+ID_Country (Foreign Key)
+
+
+4. SQL Schema Definition
+
+CREATE TABLE Client (
+    ID_Client INT PRIMARY KEY,
+    Client_Name VARCHAR(255),
+    Industry_Sector VARCHAR(255),
+    Client_Country VARCHAR(255)
+);
+
+CREATE TABLE Product (
+    ID_Product INT PRIMARY KEY,
+    Financing_Type VARCHAR(255),
+    Maximum_Amount DECIMAL(15, 2)
+);
+
+CREATE TABLE Date (
+    ID_Date INT PRIMARY KEY,
+    Day INT,
+    Month INT,
+    Year INT,
+    Quarter INT
+);
+
+CREATE TABLE Country (
+    ID_Country INT PRIMARY KEY,
+    Country_Name VARCHAR(255),
+    ISO_Code VARCHAR(3)
+);
+
+CREATE TABLE Transactions (
+    ID_Transaction INT PRIMARY KEY,
+    Financed_Amount DECIMAL(15, 2),
+    Banking_Fees DECIMAL(15, 2),
+    Duration_Months INT,
+    Interest_Rate DECIMAL(5, 2),
+    ID_Client INT,
+    ID_Product INT,
+    ID_Date INT,
+    ID_Country INT,
+    FOREIGN KEY (ID_Client) REFERENCES Client(ID_Client),
+    FOREIGN KEY (ID_Product) REFERENCES Product(ID_Product),
+    FOREIGN KEY (ID_Date) REFERENCES Date(ID_Date),
+    FOREIGN KEY (ID_Country) REFERENCES Country(ID_Country)
+);
+
+5. Sample Data
+
+INSERT INTO Client VALUES
+(101, 'ABC Corp', 'Agribusiness', 'France'),
+(102, 'XYZ Ltd', 'Automotive', 'Germany'),
+(103, 'Global Traders', 'Technology', 'USA');
+
+INSERT INTO Product VALUES
+(201, 'Letter of Credit', 1000000.00),
+(202, 'Bank Guarantee', 500000.00);
+
+INSERT INTO Date VALUES
+(20230101, 1, 1, 2023, 1),
+(20230201, 1, 2, 2023, 1);
+
+INSERT INTO Country VALUES
+(10, 'France', 'FR'),
+(20, 'Germany', 'DE'),
+(30, 'USA', 'US');
+
+INSERT INTO Transactions VALUES
+(1, 500000.00, 5000.00, 12, 4.00, 101, 201, 20230101, 10),
+(2, 250000.00, 2500.00, 6, 3.50, 102, 202, 20230101, 20),
+(3, 1000000.00, 10000.00, 24, 5.00, 103, 201, 20230201, 30);
+
+6. Analytical Queries
+
+Total Financed Amount by Country
+
+SELECT 
+    c.Country_Name, 
+    SUM(t.Financed_Amount) AS Total_Financed
+FROM 
+    Transactions t
+JOIN 
+    Country c ON t.ID_Country = c.ID_Country
+GROUP BY 
+    c.Country_Name;
+
+Average Financed Amount by Product Type
+
+SELECT 
+    p.Financing_Type, 
+    AVG(t.Financed_Amount) AS Average_Amount
+FROM 
+    Transactions t
+JOIN 
+    Product p ON t.ID_Product = p.ID_Product
+GROUP BY 
+    p.Financing_Type;
+
+Interest Revenue by Quarter
+
+SELECT 
+    d.Quarter, 
+    SUM(t.Financed_Amount * (t.Interest_Rate / 100)) AS Estimated_Interest_Revenue
+FROM 
+    Transactions t
+JOIN 
+    Date d ON t.ID_Date = d.ID_Date
+GROUP BY 
+    d.Quarter;
+
+7. Benefits of Star Schema in Trade Finance
+
+Simplicity: Easy to understand and use by business analysts.
+
+Performance: Optimized for large-scale queries and aggregations.
+
+Flexibility: Easily extensible to add new dimensions like currency, channels, or risk ratings.
+
+Integration: Can serve as a foundation for dashboards and KPIs (Key Performance Indicators) for trade finance operations.
+
+
+8. Conclusion
+
+The Star Schema is a powerful modeling technique for trade finance data warehousing. It allows financial institutions to monitor trade-related credit, measure client performance, manage risk exposure, and support strategic decision-making. With structured dimensions and aggregated facts, trade finance departments can gain faster insights and ensure regulatory compliance through better reporting.
+
+This example can be further expanded with dimensions like currency, issuing bank, transaction status, or document types to support more complex analysis.
+
