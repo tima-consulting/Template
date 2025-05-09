@@ -1,0 +1,75 @@
+Parfait ! Voici ton README.md complet en anglais, propre, clair, et avec un badge GitHub Actions déjà prêt à l’emploi :
+
+
+---
+
+# BDD Unifier
+
+![Merge BDD Reports](https://github.com/<your-org-or-username>/bdd-unifier/actions/workflows/merge.yml/badge.svg)
+
+This project automatically fetches HTML BDD reports (e.g. from GitHub Pages) for multiple microservices, merges them into a single unified report, and publishes it to GitHub Pages.
+
+---
+
+## Features
+
+- Automatically fetches each microservice’s BDD HTML report
+- Merges all HTML into a single clean page
+- Computes a **global summary** (total scenarios, passed, failed)
+- Deploys the result to **GitHub Pages**
+- Runs nightly from **Monday to Friday at 1:00 AM**
+
+---
+
+## Project Structure
+
+bdd-unifier/ ├── src/main/java/com/example/bdd/ │   ├── GitHubFetcher.java     # Downloads HTML reports │   └── HtmlMerger.java        # Merges and builds global summary ├── reports/                   # Downloaded input HTML files ├── output/                    # Final unified report (index.html) ├── pom.xml                    # Maven config with JSoup └── .github/workflows/merge.yml  # GitHub Actions workflow
+
+---
+
+## Configuration
+
+1. In `HtmlMerger.java`:
+   - Replace `ton-org` with your GitHub username or organization
+   - Update the list of microservices in `List.of("micro1", "micro2", ...)`
+
+2. Optional: customize the selectors in `HtmlMerger.java` if your BDD reports use different structure for summaries.
+
+---
+
+## Scheduled Workflow
+
+The report is built automatically every weekday at 01:00 AM (UTC), using GitHub Actions with the following trigger:
+
+```yaml
+schedule:
+  - cron: '0 1 * * 1-5'
+
+You can also run it manually via the GitHub Actions tab.
+
+
+---
+
+Accessing the Report
+
+Once published, your unified report is available at:
+
+https://<your-org-or-username>.github.io/bdd-unifier/
+
+
+---
+
+License
+
+MIT (or your preferred license)
+
+---
+
+### What to do now
+
+- Replace `<your-org-or-username>` with your actual GitHub org or username
+- Save this as `README.md` in your repo root
+- Optionally change the license section if needed
+
+Tu veux que je t’aide à ajouter aussi un `gh-pages` branch par défaut ou un fichier `.nojekyll` ?
+
