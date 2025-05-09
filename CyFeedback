@@ -1,0 +1,122 @@
+Presentation Title: Stabilizing Cypress End-to-End Tests in a Microservices Architecture
+
+
+---
+
+[Slide 1] – Context & Problem
+
+Microservices-based frontend-backend architecture
+
+Cypress used for non-regression tests
+
+Unstable external API calls and complex authentication flow
+
+Very low success rate (~2%)
+
+Developer frustration: tests always failing, even locally
+
+
+
+---
+
+[Slide 2] – Consequences
+
+Time wasted debugging false negatives
+
+Developer energy consumed for non-relevant issues
+
+Tests not trusted or used by BA or QA
+
+CI pipeline no longer reliable
+
+
+
+---
+
+[Slide 3] – Global Objective
+
+Stabilize end-to-end tests
+
+Make tests reliable and actionable for the team (Dev, QA, BA)
+
+Restore value to automated tests
+
+
+
+---
+
+[Slide 4] – Technical Solution
+
+Create a dedicated Spring Boot profile: e2e
+
+Use mocked adapters for all external dependencies
+
+Bypass authentication in this environment
+
+Use resettable fixtures or frozen test data
+
+
+
+---
+
+[Slide 5] – Hexagonal Architecture for Testing
+
+Ports = domain-level interfaces
+
+Real adapters used in prod, mocked adapters for e2e
+
+Switched dynamically via @Profile("e2e") or @ConditionalOnProperty
+
+
+
+---
+
+[Slide 6] – Team Roles & Responsibilities
+
+Developers: write and maintain critical tests, provide mocks
+
+QA: lead and ensure reliability of the test suite, write and run e2e scenarios
+
+BA: review key test flows, contribute business scenarios
+
+Suggestion: assign a dedicated QA to drive Cypress e2e quality
+
+
+
+---
+
+[Slide 7] – Added Value
+
+Reliable tests = less stress, more productivity
+
+Useful tool for QA validation
+
+Improved collaboration between Dev-QA-BA
+
+Solid foundation for CI and continuous improvement
+
+
+
+---
+
+[Slide 8] – Action Plan
+
+1. Identify external APIs to mock
+
+
+2. Create mock implementations of domain ports (adapters)
+
+
+3. Enable the e2e profile in relevant microservices
+
+
+4. Link the frontend to the e2e backend using Angular/Ionic proxy
+
+
+5. Run Cypress against this controlled environment
+
+
+6. Involve a QA to extend and maintain the test suite
+
+
+
