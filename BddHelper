@@ -1,0 +1,63 @@
+Plan en 2 étapes :
+
+Étape 1 : Chaque microservice
+
+À la fin de son workflow (comme celui que tu montres), ajoute un step pour copier le target/cucumber.json dans un repo central (bdd-reports-central par exemple)
+
+
+Exemples :
+
+Via git clone, cp, git commit, git push
+
+Ou via un curl vers un endpoint d’agrégation (option plus avancée)
+
+
+
+---
+
+Étape 2 : Repo bdd-reports-central
+
+Crée un projet Maven avec maven-cucumber-reporting
+
+Ce repo contient tous les fichiers JSON :
+
+reports/micro1.json  
+reports/micro2.json  
+...
+
+Le pipeline du repo exécute un Maven verify pour générer un seul HTML
+
+
+
+---
+
+Bonus : comment copier le JSON dans un autre repo ?
+
+Si tu veux juste ajouter ça à la fin de ton job actuel :
+
+- name: Push Cucumber JSON to central repo
+  run: |
+    git config --global user.name "github-actions"
+    git config --global user.email "actions@github.com"
+    git clone https://x-access-token:${{ secrets.CENTRAL_REPO_TOKEN }}@github.com/<org>/bdd-reports-central.git
+    cp target/cucumber.json bdd-reports-central/reports/micro1.json
+    cd bdd-reports-central
+    git add .
+    git commit -m "Update report from micro1"
+    git push
+
+Tu mets un secret CENTRAL_REPO_TOKEN avec un token GitHub qui a accès au repo central.
+
+Tu remplaces micro1.json par le nom de ton microservice.
+
+
+
+---
+
+Tu veux que je te génère ce repo bdd-reports-central avec :
+
+le pom.xml
+
+un workflow GitHub Actions complet
+
+un dossier reports/ déjà prêt ?
