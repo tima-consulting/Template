@@ -1,0 +1,23 @@
+.  dans la table
+
+Good question  — even though we currently know the source is Xx, we’re keeping `so` because:
+
+- Later on, **other sources might be added** (e.g.,  manual uploads).
+- This field allows us to **keep the model extensible** without changing the schema in the future.
+- It also helps with **filtering and lineage analysis** when debugging or reporting.
+
+So it’s more of a defensive design choice to anticipate future evolutions.
+
+
+---
+
+2. dans la table d’audit
+
+Thanks for raising this.
+
+Yes, I considered keeping only `start_date`, but:
+
+- Sometimes having the `end_date` helps to **analyze processing duration** and detect performance issues.
+- For long-running imports, it can also help in **alerting or support** (i.e., when the process hangs).
+
+It’s not mandatory for now, but it’s a useful audit trail that costs almost nothing to store.
