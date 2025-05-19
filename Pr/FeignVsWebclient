@@ -1,0 +1,27 @@
+Thanks again — great point.
+
+I deliberately chose `WebClient` over `Feign` in this case, and here’s why:
+
+### 1. Full control over reactive pipeline
+- `WebClient` allows us to build a **fully non-blocking, reactive flow** using features like `retryWhen`, `timeout`, `onStatus`, and `doOnError`.
+- That’s especially useful when triggering external or technical jobs where **response time and failure behavior vary**.
+
+### 2. This is a technical trigger, not a business API
+- We’re not calling a classic microservice with domain responses — this is more of an **external system trigger**, without any business payloads.
+- So Feign’s declarative interface style brings less benefit in this scenario.
+
+### 3. Retry strategy and timeout control
+- `WebClient` enables **fine-grained retry logic** (e.g. conditional retry, backoff strategies, timeout chaining).
+- With Feign, advanced retries often require additional wrappers (e.g. Resilience4j).
+
+### 4. Logging and observability
+- We need to **log clearly when the job fails to start**, and `WebClient` provides hooks like `doOnRequest`, `doOnError`, and `doFinally` to do just that.
+- This makes error traceability much easier.
+
+### 5. Reactive flow and future-proofing
+- If we later chain more async steps after the trigger (like notifying a queue or sending metrics), `WebClient` ensures the pipeline stays **non-blocking and reactive**.
+
+---
+
+Of course, I still use `Feign` when dealing with declarative business service-to-service calls.  
+But for technical orchestration and low-level control, `WebClient` gives us the **flexibility and robustness** we need.
