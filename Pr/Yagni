@@ -1,0 +1,9 @@
+Thanks for the suggestion!
+
+In this case, I intentionally avoided adding a  or injecting any extra service because:
+
+- **This field is not critical** and doesn’t need testing (just audit metadata).
+- The method is `static`, meant to stay extremely simple and self-contained.
+- Injecting a service just to set `LocalDateTime.now()` adds complexity and **violates the simplicity principle** here (YAGNI).
+
+If ever we need deterministic timestamps for tests or business logic, then we can refactor. But for now, I prefer keeping it lean and zero-dependency.
