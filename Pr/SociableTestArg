@@ -1,0 +1,11 @@
+Hi thanks for your suggestion!
+
+Actually, I totally get your point about unit tests being faster and more isolated. But in this context, I deliberately chose **IT-style sociable tests** over classic unit tests for a few reasons:
+
+- I prefer avoiding mocks unless strictly necessary. **Mocking everything often leads to over-specification and brittle tests** that mirror the implementation too closely.
+- These sociable tests remain **very fast**, thanks to lightweight Spring context slices and efficient setup.
+- We’re testing realistic behaviors with security annotations (`@WithConnectUser`) and real endpoint flows, which would be hard to validate meaningfully with mocks only.
+
+As Martin Fowler puts it in [this excellent article on Unit vs Sociable tests](https://martinfowler.com/bliki/UnitTest.html), **unit tests are not always the best fit**—especially when testing interactions that matter more than pure isolation.
+
+But I’m open to discussions: if you see specific areas where mocks could reduce fragility or speed up the feedback loop, I’d be glad to revisit it together!
