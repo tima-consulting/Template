@@ -1,0 +1,9 @@
+Thanks, you're absolutely right — in many cases we can reuse a single exception class and differentiate by message only, especially if we use a global exception handler to format the response.
+
+In this specific case, I created a dedicated exception for a very narrow and **technical failure scenario**, mainly because:
+
+- The error is not meant to be caught or handled differently — it’s just a clear signal that a specific **external process failed**.
+- There’s no need for a generic error classification here, and the message is tightly coupled to the context.
+- Having a named exception helps **document the intent clearly** and makes logs more readable when troubleshooting.
+
+That said, if we start handling different types of errors centrally (e.g. through a global handler), we can definitely refactor and collapse this into a more flexible structure with parameterized messages or error codes.
