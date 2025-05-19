@@ -1,0 +1,17 @@
+Thanks , you're right that using an `IdProvider` can help abstract the UUID generation and make it testable.
+
+That said, in this case I deliberately chose to keep it simple:
+
+### 1. It’s a purely technical identifier
+- The UUID here is **not part of the domain logic** — it’s a technical surrogate key used for storage and joins.
+- There’s **no added business value in testing how it’s generated**.
+
+### 2. Simplicity of the persistence layer
+- Adding an interface like `IdProvider` just to call `UUID.randomUUID()` would **add indirection** without real gain.
+- The current implementation is **self-contained and works well with JPA lifecycle (@PrePersist)**.
+
+### 3. No need to test UUIDs
+- We don’t test `LocalDate.now()` or `System.currentTimeMillis()` either — we trust them.
+- Here, the UUID is a **black-box value**, and what matters is that it’s generated when needed, not how.
+
+Of course, if someday we need to customize or centralize ID generation (e.g. prefixing, audit tracking, DB compatibility), we could refactor and introduce an `IdProvider`. But for now, simplicity wins.
