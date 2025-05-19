@@ -1,0 +1,11 @@
+Thanks , totally valid question.
+
+Right now, the logic is handled in the infra layer **because it's purely technical (data ingestion, storage, audit)** and not yet linked to the application Domain's business rules.
+
+We’re preparing a more proper separation:
+- A dedicated **domain layer** will be introduced soon for the .
+- That layer will encapsulate business logic and reduce infra leakage.
+
+At this stage, introducing a domain layer would just **add complexity without value**, since we’re still working with raw storage and not reusable business concepts.
+
+Once the domain model is stable, we’ll move the logic progressively from infra to domain as needed.
