@@ -1,0 +1,39 @@
+Example Strategy
+
+@Component("USER_PROFILE")
+public class UserProfileStrategy implements FeatureToggleStrategy {
+    private Set<String> allowedProfiles;
+
+    public void init(Map<String, String> initParams) {
+        allowedProfiles = Set.of(initParams.get("userProfiles").split(","));
+    }
+
+    public boolean evaluate(Map<String, Object> context) {
+        return allowedProfiles.contains(context.get("userProfile"));
+    }
+}
+
+Evaluation Service
+
+@Service
+public class FeatureToggleService {
+    public boolean isEnabled(String featureName, Map<String, Object> context) {
+        // Load feature from DB, resolve strategy from Spring context,
+        // initialize using expression, evaluate using runtime context
+    }
+}
+
+
+---
+
+Benefits
+
+Removes external library dependencies
+
+Full control of feature evaluation logic in Spring Boot
+
+Strategies are easily testable, mockable, and extensible
+
+Compatible with current PostgreSQL storage
+
+Maintains flexibility and dynamic toggle behavior
