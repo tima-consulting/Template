@@ -1,0 +1,60 @@
+# ADR-044: Replace Feature Toggle Library with Custom Strategy Engine Using PostgreSQL
+
+## Status
+Accepted
+
+## Date
+2025-05-23
+
+---
+
+## Context
+
+The application uses a feature toggle system where toggles are defined in a database table. Each toggle includes:
+- A unique identifier
+- An enable/disable flag
+- An optional strategy for dynamic evaluation
+- Parameters to configure the strategy
+- A description and group classification
+
+Previously, these toggles were evaluated using a third-party Java library. However, this dependency introduced unnecessary complexity and limitations. It also used legacy constructs that were not aligned with modern Spring Boot development practices.
+
+To simplify the architecture and improve flexibility, the decision was made to remove the external library and implement a custom feature toggle engine based on Spring components.
+
+---
+
+## Decision
+
+The new solution introduces a **custom feature toggle engine**, implemented as follows:
+
+- The toggles are stored in a PostgreSQL table named `feature_toggle`
+- A generic Spring service loads and evaluates the toggle dynamically
+- Evaluation strategies are implemented as Spring `@Component` beans
+- Each strategy reads configuration parameters from the `expression` column
+- Evaluation uses a standard `Map<String, Object>` to pass context data
+
+This keeps the runtime logic fully within the application while maintaining compatibility with the existing toggle model.
+
+---
+
+## Table Structure: `feature_toggle`
+
+| Column       | Type     | Description                              |
+|--------------|----------|------------------------------------------|
+| `id`         | VARCHAR  | Unique feature key                       |
+| `enabled`    | BOOLEAN  | Global activation flag                   |
+| `description`| TEXT     | Description for documentation purposes   |
+| `strategy`   | VARCHAR  | Spring bean name implementing the logic  |
+| `expression` | TEXT     | Initialization parameters for strategy   |
+| `group_name` | VARCHAR  | Optional logical grouping                |
+
+---
+
+## Architecture Overview
+
+### Strategy Interface
+```java
+public interface FeatureToggleStrategy {
+    void init(Map<String, String> initParams);
+    boolean evaluate(Map<String, Object> context);
+}
