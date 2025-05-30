@@ -1,0 +1,128 @@
+ADR – Introducing a Centralized External Mock Service for E2E Testing
+
+Status
+
+Accepted
+
+Context
+
+Our Cypress end-to-end (E2E) tests currently rely on calling real external providers (e.g. payment systems, identity checkers, etc.). However, in our non-production environments:
+
+These external services are frequently unstable or unavailable.
+
+The test data is volatile, leading to inconsistent results.
+
+Authentication mechanisms are complex or not accessible during automation.
+
+Developers are frustrated: even after fixing issues, Cypress tests often fail locally due to these dependencies.
+
+
+We need a stable, reproducible, and decoupled environment for E2E tests that allows confident validation of application behavior.
+
+Decision
+
+We will create a dedicated microservice called external-mock-service that simulates all third-party APIs used in our application. During Cypress test runs, all microservices will point to this mock service via environment-specific configuration.
+
+Architecture Overview
+
+Real providers are used in production.
+
+In e2e profile:
+
+All URLs to external providers are overridden to point to the mock service.
+
+Each microservice uses the same IdentityAdapter, PaymentAdapter, etc., with no code duplication.
+
+The external-mock-service responds with controlled, predictable, and versioned responses.
+
+
+
+Example Config (application-e2e.yml)
+
+provider:
+  identity:
+    url: http://external-mock-service/identity
+  payment:
+    url: http://external-mock-service/payment
+
+Example Adapter Code (common for all environments)
+
+@Component
+public class IdentityAdapter implements IdentityChecker {
+    public IdentityAdapter(@Value("${provider.identity.url}") String baseUrl) {
+        this.webClient = WebClient.builder().baseUrl(baseUrl).build();
+    }
+
+    public boolean check(String userId) {
+        return webClient.get()
+            .uri("/check?userId={id}", userId)
+            .retrieve()
+            .bodyToMono(Boolean.class)
+            .block();
+    }
+}
+
+Consequences
+
+✅ Pros
+
+Fully centralized and configurable mock logic
+
+No need to duplicate adapters for test mode
+
+Allows Cypress to execute with predictable, stable test results
+
+Enables BA/QA users to simulate real-life scenarios without accessing live systems
+
+Reusable for manual QA, demos, sandbox environments
+
+Respects clean architecture principles (ports + config)
+
+
+❌ Cons
+
+Requires initial setup and maintenance of the mock service
+
+Drift risk between real provider and mock if not validated regularly
+
+Adds a network hop between microservices and mock (minimal in controlled env)
+
+Might need a scenario management interface later (admin panel, scenario IDs)
+
+
+Known Implementations
+
+This approach has been adopted by:
+
+Netflix – uses Stubby services to simulate real systems in integration environments
+
+Spotify – simulates service behavior to validate components independently
+
+Large banks and telecom providers – mock services are common to reduce reliance on expensive or unstable 3rd-party test systems
+
+
+Alternatives Considered
+
+A. Mock per microservice using @Profile("e2e")
+
+✅ Closer to pure hexagonal architecture
+
+❌ High duplication, distributed maintenance
+
+❌ Harder to simulate cross-cutting scenarios (latency, errors)
+
+
+B. Real API usage in non-prod
+
+❌ Test flakiness, downtime
+
+❌ Inconsistent data, rate limiting, access constraints
+
+
+Conclusion
+
+We will proceed with the creation of external-mock-service, deployable in any E2E test environment, and switch all external provider configurations accordingly in application-e2e.yml. This pattern improves test stability, developer trust, and enables scalable BA/QA validation workflows.
+
+A future extension may include a lightweight UI or API to control mock scenarios dynamically.
+
+
