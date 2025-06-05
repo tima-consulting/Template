@@ -1,0 +1,19 @@
+✅ Version concise, claire et argumentée :
+
+Hi team,
+
+Just a quick note on why I preferred using a manual stub over Mockito for this test:
+
+1. **Better readability** – With a manual stub, the test reads like a story. No `.when()` or `.verify()`, just clear behavior.
+2. **No coupling to internals** – We don't need to verify specific method calls or call orders. We check observable effects, not implementation details.
+3. **Pure Java, no framework** – Manual stubs don’t introduce dependencies (like Mockito) into the domain or test layers. This aligns better with hexagonal architecture.
+4. **More control** – I can add counters, simulate exceptions, and capture inputs directly without relying on Mockito-specific APIs.
+
+Uncle Bob would approve 😉
+
+
+---
+
+📌 Bonus tagline si tu veux conclure avec humour :
+
+> “Mocks know too much. Stubs just get the job done.” ✅
