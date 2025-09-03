@@ -1,0 +1,35 @@
+import java.text.NumberFormat;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class Formatter {
+
+    // Regex : capture montant + devise (toute séquence de lettres majuscules 2 à 4 caractères)
+    private static final Pattern AMOUNT_PATTERN =
+            Pattern.compile("(?<=\\bof\\s)(\\d+(?:\\.\\d+)?)(?=\\s+[A-Z]{2,4}\\b)");
+
+    public static String formatDescription(String description) {
+        if (description == null) {
+            return null;
+        }
+
+        Matcher matcher = AMOUNT_PATTERN.matcher(description);
+        StringBuffer sb = new StringBuffer();
+
+        // tu peux changer Locale.US -> Locale.FRANCE pour avoir "204 000 000" au lieu de "204,000,000"
+        NumberFormat formatter = NumberFormat.getNumberInstance(Locale.US);
+        formatter.setGroupingUsed(true);
+
+        while (matcher.find()) {
+            String rawAmount = matcher.group(1);
+            double value = Double.parseDouble(rawAmount);
+            String formatted = formatter.format(value);
+            matcher.appendReplacement(sb, formatted);
+        }
+        matcher.appendTail(sb);
+
+        return sb.toString();
+    }
+
+}
