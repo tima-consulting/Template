@@ -1,0 +1,26 @@
+import java.text.NumberFormat;
+import java.util.Locale;
+import java.util.regex.*;
+
+public class MsgAmountFormatter {
+    private static final Pattern AMOUNT_CURRENCY =
+            Pattern.compile("(-?\\d+(?:\\.\\d+)?)(?=\\s+[A-Z]{2,4}\\b)"); // ou la version “spécifique”
+
+    public static String formatMsg(String msg, Locale locale) {
+        if (msg == null) return null;
+
+        NumberFormat nf = NumberFormat.getNumberInstance(locale); // Locale.US -> 1,234,567.89
+        nf.setGroupingUsed(true);
+
+        Matcher m = AMOUNT_CURRENCY.matcher(msg);
+        StringBuffer out = new StringBuffer();
+        while (m.find()) {
+            String raw = m.group(1);
+            double val = Double.parseDouble(raw);
+            String fmt = nf.format(val);
+            m.appendReplacement(out, Matcher.quoteReplacement(fmt));
+        }
+        m.appendTail(out);
+        return out.toString();
+    }
+}
